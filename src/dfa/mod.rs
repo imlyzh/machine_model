@@ -21,6 +21,15 @@ impl Into<bool> for MatchResult {
   }
 }
 
+impl MatchResult {
+  pub fn map<T>(&self, f: impl Fn() -> T) -> Option<T> {
+    match self {
+      MatchResult::Reject => None,
+      MatchResult::Accept => Some(f()),
+    }
+  }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TargetNodeOffset {
   Next(NodeOffset),
