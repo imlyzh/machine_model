@@ -11,11 +11,11 @@ pub enum MatchResult {
   Accept = 1,
 }
 
-impl Into<bool> for MatchResult {
-  fn into(self) -> bool {
-    match self {
-        MatchResult::Reject => false,
-        MatchResult::Accept => true,
+impl From<MatchResult> for bool {
+  fn from(value: MatchResult) -> Self {
+    match value {
+      MatchResult::Reject => false,
+      MatchResult::Accept => true,
     }
   }
 }

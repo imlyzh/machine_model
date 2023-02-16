@@ -1,7 +1,7 @@
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, hash_map::Entry};
 use crate::{dfa::{DFAStatusTransGraph, Edge, self}, NodeOffset, TargetNodeOffset};
 
-use super::{NFAStatusTransGraph, Node};
+use super::NFAStatusTransGraph;
 
 
 
@@ -12,20 +12,19 @@ type Table = HashMap<NonUniqueKey, TableValue>;
 
 
 fn get_key_from_value(i: &TableValue) -> Vec<NonUniqueKey> {
-  i.values().map(|x | x.iter().cloned().collect::<NonUniqueKey>()).collect()
+  i.values().map(|x | x.to_vec()).collect()
 }
 
 fn get_sorted_set(i: impl Iterator<Item = TargetNodeOffset>) -> NonUniqueKey {
-  let r = i.collect::<Vec<_>>();
+  let mut r = i.collect::<Vec<_>>();
   r.sort();
   r
 }
 
 impl NFAStatusTransGraph {
-  fn to_dfa(&self) -> DFAStatusTransGraph {
+  pub fn to_dfa(&self) -> DFAStatusTransGraph {
     let mut value: Table = Table::new();
     let mut work_list: Vec<NonUniqueKey> = (0..self.0.len())
-      .into_iter()
       .map(|x| self.get_nexts(x))
       .flat_map(|x| get_key_from_value(&x))
       // .map(|x | x.iter().cloned().collect::<NonUniqueKey>())
@@ -34,7 +33,7 @@ impl NFAStatusTransGraph {
     // 很经典的流分析（图遍历）样板代码
     loop {
       let new_value: Table = work_list.iter()
-        .map(|k| (k.clone(), self.get_target_nexts(&k))).collect();
+        .map(|k| (k.clone(), self.get_target_nexts(k))).collect();
       let mut new_work_list: Vec<NonUniqueKey> = new_value.values().flat_map(get_key_from_value).collect();
       new_work_list.sort();
       if new_work_list == work_list {
@@ -77,12 +76,12 @@ impl NFAStatusTransGraph {
       .iter()
       .filter(|x| x.1 == i)
       .map(|x| (x.0, &x.2)) {
-        if ret_table.contains_key(&k) {
-          ret_table.get_mut(&k).unwrap().extend(v.into_iter());
+        if let Entry::Vacant(e) = ret_table.entry(k) {
+          e.insert(v.clone());
         } else {
-          ret_table.insert(k, v.clone());
+          ret_table.get_mut(&k).unwrap().extend(v.iter());
         }
       }
-    return ret_table.into_iter().map(|(k, v)| (k, get_sorted_set(v.into_iter()))).collect();
+    ret_table.into_iter().map(|(k, v)| (k, get_sorted_set(v.into_iter()))).collect()
   }
 }
