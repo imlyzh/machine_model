@@ -27,7 +27,7 @@ fn get_sorted_set(i: impl Iterator<Item = TargetNodeOffset>) -> NonUniqueKey {
 
 impl NFAStatusTransGraph {
   pub fn to_dfa(&self) -> DFAStatusTransGraph {
-    let mut value: Table = Table::new();
+    let mut value: Table;
     // get start condition(key list)
     let mut work_list: Vec<NonUniqueKey> = (0..self.0.len())
       .map(|offset| vec![TargetNodeOffset::Next(offset)])
