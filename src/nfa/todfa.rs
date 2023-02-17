@@ -24,23 +24,24 @@ fn get_sorted_set(i: impl Iterator<Item = TargetNodeOffset>) -> NonUniqueKey {
 impl NFAStatusTransGraph {
   pub fn to_dfa(&self) -> DFAStatusTransGraph {
     let mut value: Table = Table::new();
+    // get start condition(key list)
     let mut work_list: Vec<NonUniqueKey> = (0..self.0.len())
-      .map(|x| self.get_nexts(x))
-      .flat_map(|x| get_key_from_value(&x))
-      // .map(|x | x.iter().cloned().collect::<NonUniqueKey>())
+      .map(|offset| vec![TargetNodeOffset::Next(offset)])
+      // .map(|x| self.get_nexts(x))
+      // .flat_map(|x| get_key_from_value(&x))
       .collect::<Vec<_>>();
     work_list.sort();
-    // 很经典的流分析（图遍历）样板代码
+    // graph propagate and find fixed point
     loop {
       let new_value: Table = work_list.iter()
         .map(|k| (k.clone(), self.get_target_nexts(k))).collect();
       let mut new_work_list: Vec<NonUniqueKey> = new_value.values().flat_map(get_key_from_value).collect();
       new_work_list.sort();
+      value = new_value;
       if new_work_list == work_list {
         break;
       } else {
         work_list = new_work_list;
-        value = new_value;
       }
     }
     let key_map: HashMap<NonUniqueKey, usize> = value.keys()

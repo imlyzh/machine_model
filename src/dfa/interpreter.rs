@@ -1,9 +1,10 @@
 use super::*;
 use super::TargetNodeOffset::*;
 
-
+///# Safety
+/// It is safety if and only if the input is nfa2dfa
 #[inline]
-pub fn raw_interpret(_bytecodes: *const [Node], _src: *const u8, _length: usize) -> Option<usize> {
+pub unsafe fn raw_interpret(_bytecodes: *const [Node], _src: *const u8, _length: usize) -> Option<usize> {
   // let bytes = str;
   // let bytes = str.as_bytes();
   // raw_interpret(bytecodes, bytes.as_ptr(), bytes.len())
@@ -11,6 +12,8 @@ pub fn raw_interpret(_bytecodes: *const [Node], _src: *const u8, _length: usize)
 }
 
 
+///# Safety
+/// It is safe if and only if the input is nfa2dfa
 #[inline]
 pub unsafe fn interpret(bytecodes: & [Node], src: *const u8, length: usize) -> Option<usize> {
   let mut pc = 0;
