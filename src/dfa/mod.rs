@@ -1,13 +1,13 @@
-use crate::{NodeOffset, TargetNodeOffset, StatusTransGraph};
-pub mod interpreter;
+use crate::{NodeOffset, StatusTransGraph, TargetNodeOffset};
 pub mod compiler;
+pub mod interpreter;
 
 
 
 /// ## Edge
 /// if src[offset] == char { goto next_status }
 #[derive(Debug)]
-pub struct Edge (pub u8, pub NodeOffset, pub TargetNodeOffset);
+pub struct Edge(pub u8, pub NodeOffset, pub TargetNodeOffset);
 
 
 /// ## Node

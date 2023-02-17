@@ -1,5 +1,9 @@
-use std::collections::{HashMap, hash_map::Entry};
-use crate::{dfa::{DFAStatusTransGraph, Edge, self}, NodeOffset, TargetNodeOffset};
+use crate::{
+  dfa::{self, DFAStatusTransGraph, Edge},
+  NodeOffset,
+  TargetNodeOffset,
+};
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::NFAStatusTransGraph;
 
@@ -12,7 +16,7 @@ type Table = HashMap<NonUniqueKey, TableValue>;
 
 
 fn get_key_from_value(i: &TableValue) -> Vec<NonUniqueKey> {
-  i.values().map(|x | x.to_vec()).collect()
+  i.values().map(|x| x.to_vec()).collect()
 }
 
 fn get_sorted_set(i: impl Iterator<Item = TargetNodeOffset>) -> NonUniqueKey {
@@ -33,9 +37,12 @@ impl NFAStatusTransGraph {
     work_list.sort();
     // graph propagate and find fixed point
     loop {
-      let new_value: Table = work_list.iter()
-        .map(|k| (k.clone(), self.get_target_nexts(k))).collect();
-      let mut new_work_list: Vec<NonUniqueKey> = new_value.values().flat_map(get_key_from_value).collect();
+      let new_value: Table = work_list
+        .iter()
+        .map(|k| (k.clone(), self.get_target_nexts(k)))
+        .collect();
+      let mut new_work_list: Vec<NonUniqueKey> =
+        new_value.values().flat_map(get_key_from_value).collect();
       new_work_list.sort();
       value = new_value;
       if new_work_list == work_list {
@@ -44,16 +51,18 @@ impl NFAStatusTransGraph {
         work_list = new_work_list;
       }
     }
-    let key_map: HashMap<NonUniqueKey, usize> = value.keys()
+    let key_map: HashMap<NonUniqueKey, usize> = value
+      .keys()
       .enumerate()
       .map(|(offset, o)| (o.clone(), offset))
       .collect();
-    let map: Vec<dfa::Node> = value.into_iter()
-      .map(|(k, v)|
+    let map: Vec<dfa::Node> = value
+      .into_iter()
+      .map(|(k, v)| {
         v.into_iter()
-          .map(|(mat, next)| Edge(mat, key_map[&k], TargetNodeOffset::Next(key_map[&next])))  // fixme Edge(mat, prev, next!!!!!)
+          .map(|(mat, next)| Edge(mat, key_map[&k], TargetNodeOffset::Next(key_map[&next]))) // fixme Edge(mat, prev, next!!!!!)
           .collect()
-      )
+      })
       .collect();
     DFAStatusTransGraph::new(map)
   }
@@ -73,16 +82,16 @@ impl NFAStatusTransGraph {
   /// table.get_nexts(1) => {'a': {1, 2}, 'b': {2}}
   fn get_nexts(&self, i: NodeOffset) -> TableValue {
     let mut ret_table: HashMap<u8, Vec<TargetNodeOffset>> = HashMap::new();
-    for (k, v) in self.0
-      .iter()
-      .filter(|x| x.1 == i)
-      .map(|x| (x.0, &x.2)) {
-        if let Entry::Vacant(e) = ret_table.entry(k) {
-          e.insert(v.clone());
-        } else {
-          ret_table.get_mut(&k).unwrap().extend(v.iter());
-        }
+    for (k, v) in self.0.iter().filter(|x| x.1 == i).map(|x| (x.0, &x.2)) {
+      if let Entry::Vacant(e) = ret_table.entry(k) {
+        e.insert(v.clone());
+      } else {
+        ret_table.get_mut(&k).unwrap().extend(v.iter());
       }
-    ret_table.into_iter().map(|(k, v)| (k, get_sorted_set(v.into_iter()))).collect()
+    }
+    ret_table
+      .into_iter()
+      .map(|(k, v)| (k, get_sorted_set(v.into_iter())))
+      .collect()
   }
 }

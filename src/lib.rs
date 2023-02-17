@@ -50,11 +50,7 @@ pub struct StatusTransGraph<T>(pub Vec<T>);
 
 
 impl<T> StatusTransGraph<T> {
-  pub fn new(i: Vec<T>)-> Self {
-    Self(i)
-  }
+  pub fn new(i: Vec<T>) -> Self { Self(i) }
 
-  pub fn add_edge(&mut self, i: T) {
-    self.0.push(i)
-  }
+  pub fn add_edge(&mut self, i: T) { self.0.push(i) }
 }
